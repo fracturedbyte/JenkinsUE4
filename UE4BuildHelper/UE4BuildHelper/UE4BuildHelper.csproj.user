@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <StartArguments>-handleSCMtrigger -c 302  -j BinaryBuilder -jp PackageTacticalShooter -u User1 -t tag -veryverbose -s Perforce</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <StartArguments>-debugfullpipeline -c 60 -jb BinaryBuilder -jp PackageProject</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NXTargetSerialNumber>Default</NXTargetSerialNumber>
+  </PropertyGroup>
+</Project>

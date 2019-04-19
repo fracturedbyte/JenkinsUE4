@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven
+Built-By: pallen
+Build-Jdk: 1.8.0_162
+Extension-Name: p4
+Specification-Title: Perforce Client plugin for the Jenkins SCM provid
+ er.
+Implementation-Title: p4
+Implementation-Version: 1.8.15
+Group-Id: org.jenkins-ci.plugins
+Short-Name: p4
+Long-Name: P4 Plugin
+Url: https://wiki.jenkins-ci.org/display/JENKINS/P4+Plugin
+Plugin-Version: 1.8.15
+Hudson-Version: 1.642.3
+Jenkins-Version: 1.642.3
+Plugin-Dependencies: workflow-multibranch:2.16,workflow-step-api:2.14,
+ credentials:2.1.16,mailer:1.18;resolution:=optional,matrix-project:1.
+ 12,multiple-scms:0.6;resolution:=optional,scm-api:2.2.6,structs:1.10
+Plugin-Developers: Paul Allen:p4paul:pallen@perforce.com
+

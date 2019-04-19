@@ -1,0 +1,91 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.security.AuthorizationMatrixProperty>
+      <inheritanceStrategy class="org.jenkinsci.plugins.matrixauth.inheritance.NonInheritingStrategy"/>
+    </hudson.security.AuthorizationMatrixProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>10</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>ProjectName</name>
+          <description></description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>SCMType</name>
+          <description></description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>Perforce</string>
+              <string>SVN</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <authToken>33f244e7fefc71d7ca3c703b9d6724ef</authToken>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.BatchFile>
+      <command>echo SCM Type %SCMType%&#xd;
+&#xd;
+call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -resolvesourcemarks -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName%&#xd;
+&#xd;
+if %ERRORLEVEL% NEQ 0 GOTO Exit&#xd;
+&#xd;
+call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -updatescm -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName%&#xd;
+&#xd;
+if %ERRORLEVEL% NEQ 0 GOTO Exit&#xd;
+&#xd;
+:Exit&#xd;
+echo Updating finished with result %ERRORLEVEL%&#xd;
+exit %ERRORLEVEL%</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -checkoutbin -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName% -e exe ext lib dll target modules version pdb</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -performbuild -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName%&#xd;
+&#xd;
+if %ERRORLEVEL% NEQ 0 (&#xd;
+   call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -revertscm -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName%&#xd;
+&#xd;
+   exit -1&#xd;
+)&#xd;
+</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -commitdll -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName% -ur</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>echo Cleaning up...&#xd;
+&#xd;
+if &quot;%SCMType%&quot; == &quot;SVN&quot; (&#xd;
+   call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -revertscm -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName%&#xd;
+)&#xd;
+&#xd;
+call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -cleanup -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName%</command>
+    </hudson.tasks.BatchFile>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

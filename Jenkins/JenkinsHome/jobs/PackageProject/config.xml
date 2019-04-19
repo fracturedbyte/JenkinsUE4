@@ -1,0 +1,172 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>30</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>30</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>Platform</name>
+          <description></description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>IOS</string>
+              <string>Win64Server</string>
+              <string>Win64</string>
+              <string>Android</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>Configuration</name>
+          <description></description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>Development</string>
+              <string>DebugGame</string>
+              <string>Shipping</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>bFullRebuild</name>
+          <description>(Optional)</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>bForDistribution</name>
+          <description>(Optional)</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>bSkipCook</name>
+          <description>Skip Cook and Stage and use already cached cooked content to package build faster</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>bUpload</name>
+          <description>(Optional) Implement your uploader</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.FileParameterDefinition>
+          <name>Upload/Config/DefaultEngine.ini</name>
+          <description>(Optional) DefaulteEngine Config</description>
+        </hudson.model.FileParameterDefinition>
+        <hudson.model.FileParameterDefinition>
+          <name>Upload/Config/DefaultGame.ini</name>
+          <description>(Optional) DefaultGame Config</description>
+        </hudson.model.FileParameterDefinition>
+        <hudson.model.FileParameterDefinition>
+          <name>Upload/Config/DefaultDeviceProfiles.ini</name>
+          <description>(Optional) DefaultDeviceProfiles Config</description>
+        </hudson.model.FileParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ProjectName</name>
+          <description>(Optional) Default Project Override. Keep this field empty if building default project.</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>SCMType</name>
+          <description></description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>SVN</string>
+              <string>Perforce</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <authToken>33f244e7fefc71d7ca3c703b9d6724ef</authToken>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.BatchFile>
+      <command>call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -revertscm -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName%</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>REM NOTE: Uncomment this if you are using SVN and want to see changelog of subversion in the Jenkins&#xd;
+&#xd;
+REM call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -resolvesourcemarks -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName% -cl -w %WORKSPACE%</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>@echo off&#xd;
+echo SCM Type %SCMType%&#xd;
+&#xd;
+if %bSkipSCMUpdate% == &quot;true&quot; (&#xd;
+    echo Skipping %SCMType%% update...&#xd;
+) else (&#xd;
+    call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -updatescm -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName% -w %WORKSPACE%&#xd;
+)&#xd;
+&#xd;
+exit %ERRORLEVEL%</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>set FinalConfiguration=%Configuration%&#xd;
+set bFinalForDistribution=%bForDistribution%&#xd;
+&#xd;
+if &quot;%bUpload%&quot; == &quot;true&quot; (&#xd;
+   set FinalConfiguration=Shipping&#xd;
+   set bFinalForDistribution=true&#xd;
+)&#xd;
+&#xd;
+call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -performpackage -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName% -configuration %FinalConfiguration% -platform %Platform% -w %WORKSPACE% -fullrebuild %bFullRebuild% -distribution %bFinalForDistribution% -skipcook %bSkipCook%&#xd;
+&#xd;
+if %ERRORLEVEL% NEQ 0 (&#xd;
+   call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -revertscm -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName%&#xd;
+&#xd;
+   exit -1&#xd;
+)&#xd;
+</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>echo Cleaning up...&#xd;
+&#xd;
+if &quot;%SCMType%&quot; == &quot;SVN&quot; (&#xd;
+   call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -revertscm -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName%&#xd;
+)&#xd;
+&#xd;
+call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -cleanup -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName% -w %WORKSPACE%</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>set UploaderJobName=&quot;&quot;&#xd;
+&#xd;
+if &quot;%bUpload%&quot; == &quot;true&quot; (&#xd;
+   if &quot;%Platform%&quot; == &quot;IOS&quot; (&#xd;
+      REM set UploaderJobName=Set your uploader job name here&#xd;
+   )&#xd;
+   if &quot;%Platform%&quot; == &quot;Win64&quot; (&#xd;
+      REM set UploaderJobName=Set your uploader job name here&#xd;
+   )&#xd;
+)&#xd;
+&#xd;
+if &quot;%bUpload%&quot; == &quot;true&quot; (&#xd;
+   if &quot;%UploaderJobName%&quot; == &quot;&quot; (&#xd;
+      echo Can&apos;t upload build! UploaderJobName is not set.&#xd;
+   )&#xd;
+)&#xd;
+&#xd;
+if %UploaderJobName% NEQ &quot;&quot; (&#xd;
+   call %JENKINS_HOME%/../Builder/Binaries/UE4BuildHelper.exe -uploadbuild -j %JOB_BASE_NAME% -t %BUILD_TAG% -s %SCMType% -p %ProjectName% -uj %UploaderJobName%&#xd;
+)</command>
+    </hudson.tasks.BatchFile>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

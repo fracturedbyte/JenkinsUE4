@@ -91,14 +91,13 @@ If executable will be started without any arguments then settings window will be
 
 ## Scripts
 
-Run.bat - Running Jenkins Server on the port 8080 on the current machine (you can change the port in this script)
+- Run.bat - Running Jenkins Server on the port 8080 on the current machine (you can change the port in this script)
 
-HandleCommit.sh - Remote perforce trigger for Linux
-HandleCommit.bat - Remote perforce trigger for Windows
+- HandleCommit.sh - Remote perforce trigger for Linux
+- HandleCommit.bat - Remote perforce trigger for Windows
 
-post-commit.bat - Remote SVN trigger for Windows
-post-commit_Local.bat - Local SVN trigger for Windows (if build repository stores on SVN server machine, using for testing)
-
+- post-commit.bat - Remote SVN trigger for Windows
+- post-commit_Local.bat - Local SVN trigger for Windows (if build repository stores on SVN server machine, using for testing)
 
 #### Scripts configuration
 
